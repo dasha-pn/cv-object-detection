@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+
+# Generated datasets, training runs and weights
+data/
+runs/
+*.pt
+*.onnx
+wandb/
+
+# Submissions are produced by scripts
+submissions/
