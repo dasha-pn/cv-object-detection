@@ -1,0 +1,8 @@
+# Initial anchor-free model: COCO-pretrained YOLO11s with Ultralytics defaults at 640 px
+name: af0_baseline_640
+family: anchor_free
+arch: yolo
+model: yolo11s.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 640
+train: {epochs: 30, batch: 8, workers: 4}

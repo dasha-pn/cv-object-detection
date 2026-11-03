@@ -1,0 +1,12 @@
+# Extra stride-4 detection level (P2) for objects below 16 px.
+# Batch 2 to fit 8 GB on the densest frames (batch 4 ran out of memory at epoch 14 and the run
+# was resumed with batch 2). Ultralytics accumulates gradients to the same nominal batch of 64,
+# so the optimisation step is unchanged.
+name: af2_p2_1152
+family: anchor_free
+arch: yolo
+model: configs/models/yolo11s-p2.yaml
+weights: yolo11s.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 1152
+train: {epochs: 30, batch: 2, workers: 4}

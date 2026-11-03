@@ -1,0 +1,9 @@
+# Input resolution: 1152 px longest side, the same scale as the torchvision two-stage
+# and anchor-based detectors (shorter side 640, longer side at most 1152)
+name: af1_imgsz1152
+family: anchor_free
+arch: yolo
+model: yolo11s.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 1152
+train: {epochs: 30, batch: 8, workers: 4}

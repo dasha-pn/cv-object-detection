@@ -1,0 +1,9 @@
+# Box loss: 0.5 * CIoU + 0.5 * NWD. NWD constant = mean object size at 1152 px (32 px)
+name: af3_nwd_1152
+family: anchor_free
+arch: yolo
+model: yolo11s.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 1152
+train: {epochs: 30, batch: 8, workers: 4}
+loss: {tal_topk: 10, nwd_ratio: 0.5, nwd_constant: 32.0}

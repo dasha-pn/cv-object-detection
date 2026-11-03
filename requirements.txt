@@ -10,3 +10,4 @@ scikit-learn
 ipykernel
 nbformat
 nbconvert
+pyyaml
