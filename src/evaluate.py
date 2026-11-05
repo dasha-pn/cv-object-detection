@@ -11,8 +11,11 @@ from .common import CLASS_NAMES
 MAX_DETS = [1, 100, 500]
 
 
-def coco_evaluate(gt_path, detections):
-    """Evaluate COCO detections: image_id, category_id (1-based), bbox xywh, score."""
+def coco_evaluate(gt_path, detections, image_ids=None):
+    """Evaluate COCO detections: image_id, category_id (1-based), bbox xywh, score.
+
+    image_ids restricts the evaluation to a subset of images, e.g. one clip.
+    """
     gt = COCO(str(gt_path))
     if not detections:
         return {"AP": 0.0}
@@ -20,6 +23,8 @@ def coco_evaluate(gt_path, detections):
 
     evaluator = COCOeval_faster(gt, dt, iouType="bbox", print_function=lambda *a: None)
     evaluator.params.maxDets = MAX_DETS
+    if image_ids is not None:
+        evaluator.params.imgIds = list(image_ids)
     evaluator.evaluate()
     evaluator.accumulate()
     evaluator.summarize()

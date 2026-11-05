@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 
 from .common import CLASS_NAMES
+from .evaluate import coco_evaluate
 
 IOU_MATCH = 0.5
 IOU_LOCATION = 0.1
@@ -118,6 +119,34 @@ def classify_errors(gt_path, detections, score_thr=0.3):
     det_table["class_name"] = [CLASS_NAMES[c] for c in det_table["cls"]]
     gt_table["class_name"] = [CLASS_NAMES[c] for c in gt_table["cls"]]
     return det_table, gt_table
+
+
+def per_clip_ap(gt_path, detections):
+    """COCO AP of every clip separately, for paired comparisons between runs."""
+    clips = defaultdict(list)
+    for img in json.loads(gt_path.read_text())["images"]:
+        clips[img["video"]].append(img["id"])
+    return {clip: coco_evaluate(gt_path, detections, image_ids=ids)["AP"]
+            for clip, ids in sorted(clips.items())}
+
+
+def paired_comparison(clip_ap, reference):
+    """Per-clip AP difference of every run against a reference run.
+
+    Clips are independent videos, so the spread of the differences across clips tells
+    whether a change in the overall AP is larger than the clip-to-clip noise.
+    """
+    table = pd.DataFrame(clip_ap)
+    rows = {}
+    for run in table.columns:
+        diff = table[run] - table[reference]
+        rows[run] = {
+            "mean_diff": diff.mean(),
+            "std_err": diff.std(ddof=1) / np.sqrt(len(diff)),
+            "clips_better": int((diff > 0).sum()),
+            "clips_worse": int((diff < 0).sum()),
+        }
+    return pd.DataFrame(rows).T
 
 
 def error_summary(det_table, gt_table):
