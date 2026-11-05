@@ -1,0 +1,15 @@
+# Final fit: the qb3 recipe (lr 1e-4, backbone lr 0.1x, no bias warm-up), the best single model on
+# val, trained on every 5th frame of all train and val clips (5439 frames of 63 clips).
+# 9 epochs over 5439 frames are the 30 x 1629 iterations of qb3; the warm-up and the epochs
+# without mosaic are scaled down in the same way. The curve of qb3 rises until its last epoch,
+# so last.pt is used. The evaluation clips are part of the training data, so the run is not scored.
+name: f1_rtdetr_full_s5
+family: pipeline
+arch: rtdetr
+model: rtdetr-l.pt
+data: data/yolo/full_s5/data.yaml
+imgsz: 1152
+backbone_lr_scale: 0.1
+checkpoint: last
+evaluate: false
+train: {epochs: 9, close_mosaic: 3, warmup_epochs: 1, batch: 2, workers: 4, optimizer: AdamW, lr0: 0.0001, weight_decay: 0.0001, warmup_bias_lr: 0.0}

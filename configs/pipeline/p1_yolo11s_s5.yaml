@@ -1,0 +1,10 @@
+# Data change only: af1 trained on every 5th frame of folds 1-2 instead of every 10th.
+# Twice the frames for half the epochs, so the number of iterations, the warm-up and the
+# iterations without mosaic are the same as in af1.
+name: p1_yolo11s_s5
+family: pipeline
+arch: yolo
+model: yolo11s.pt
+data: data/yolo/fold0_s5/data.yaml
+imgsz: 1152
+train: {epochs: 15, close_mosaic: 5, warmup_epochs: 1.5, batch: 8, workers: 4}

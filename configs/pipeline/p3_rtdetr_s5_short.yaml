@@ -1,0 +1,12 @@
+# Short schedule for the final fit: p2 for 5 epochs instead of 15, scored with last.pt.
+# The curves of qb0 and p2 peak after a few epochs and then drop by about 0.01, and the final
+# fit has no holdout to choose the best epoch on, so this run checks the last checkpoint of a
+# schedule that ends near the peak. Warm-up and the epochs without mosaic are scaled down.
+name: p3_rtdetr_s5_short
+family: pipeline
+arch: rtdetr
+model: rtdetr-l.pt
+data: data/yolo/fold0_s5/data.yaml
+imgsz: 1152
+checkpoint: last
+train: {epochs: 5, close_mosaic: 2, warmup_epochs: 1, batch: 2, workers: 4}
