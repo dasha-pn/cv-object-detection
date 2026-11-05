@@ -1,0 +1,16 @@
+# c1 with the P2 projection at its default initialisation instead of a zero BatchNorm scale.
+# In c1 the P2 level stayed off: its scale grew only to 0.015, so all P2 tokens were almost the
+# same vector, scored the same in query selection and got 0.3 of the 300 queries per frame.
+# A level that is never selected gets almost no gradient, so the silent start kept it silent.
+# The only difference to c1_rtdetr_p2_s5_short is the initialisation of the new projection.
+name: c2_rtdetr_p2_open_s5_short
+family: custom
+arch: rtdetr
+model: configs/models/rtdetr-l-p2.yaml
+weights: rtdetr-l.pt
+extra_levels: 1
+silent_start: false
+data: data/yolo/fold0_s5/data.yaml
+imgsz: 1152
+checkpoint: last
+train: {epochs: 5, close_mosaic: 2, warmup_epochs: 1, batch: 2, workers: 4}

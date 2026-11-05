@@ -1,0 +1,15 @@
+# Custom architecture: RT-DETR-l with an extra stride-4 (P2) level, trained with the p3 recipe.
+# Tiling (notebook 07) gives the largest gain of all inference strategies, mostly on small
+# objects, which means that the stride-8 finest level of RT-DETR is too coarse for VisDrone.
+# A P2 level gives the decoder a 4x denser grid of features and query candidates instead.
+# The only difference to p3_rtdetr_s5_short is the model.
+name: c1_rtdetr_p2_s5_short
+family: custom
+arch: rtdetr
+model: configs/models/rtdetr-l-p2.yaml
+weights: rtdetr-l.pt
+extra_levels: 1
+data: data/yolo/fold0_s5/data.yaml
+imgsz: 1152
+checkpoint: last
+train: {epochs: 5, close_mosaic: 2, warmup_epochs: 1, batch: 2, workers: 4}

@@ -1,0 +1,57 @@
+# RT-DETR-l (Ultralytics rtdetr-l.yaml, AGPL-3.0) with an extra stride-4 (P2) level for small objects.
+# Layers 0-27 are unchanged, so they keep their pretrained weights. The P2 branch extends the
+# top-down path of the neck by one step: the P3 output of the FPN is upsampled and fused with the
+# backbone stage-1 features (stride 4). The decoder then reads four levels, P2 first.
+# The P2 branch has 128 channels instead of 256 to keep the memory at stride 4 manageable.
+
+nc: 8
+scales:
+  l: [1.00, 1.00, 1024]
+
+backbone:
+  - [-1, 1, HGStem, [32, 48]] # 0-P2/4
+  - [-1, 6, HGBlock, [48, 128, 3]] # 1, stage 1
+
+  - [-1, 1, DWConv, [128, 3, 2, 1, False]] # 2-P3/8
+  - [-1, 6, HGBlock, [96, 512, 3]] # 3, stage 2
+
+  - [-1, 1, DWConv, [512, 3, 2, 1, False]] # 4-P4/16
+  - [-1, 6, HGBlock, [192, 1024, 5, True, False]]
+  - [-1, 6, HGBlock, [192, 1024, 5, True, True]]
+  - [-1, 6, HGBlock, [192, 1024, 5, True, True]] # 7, stage 3
+
+  - [-1, 1, DWConv, [1024, 3, 2, 1, False]] # 8-P5/32
+  - [-1, 6, HGBlock, [384, 2048, 5, True, False]] # 9, stage 4
+
+head:
+  - [-1, 1, Conv, [256, 1, 1, None, 1, 1, False]] # 10
+  - [-1, 1, AIFI, [1024, 8]]
+  - [-1, 1, Conv, [256, 1, 1]] # 12, Y5
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [7, 1, Conv, [256, 1, 1, None, 1, 1, False]] # 14
+  - [[-2, -1], 1, Concat, [1]]
+  - [-1, 3, RepC3, [256]] # 16
+  - [-1, 1, Conv, [256, 1, 1]] # 17, Y4
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [3, 1, Conv, [256, 1, 1, None, 1, 1, False]] # 19
+  - [[-2, -1], 1, Concat, [1]]
+  - [-1, 3, RepC3, [256]] # 21, X3
+
+  - [-1, 1, Conv, [256, 3, 2]] # 22
+  - [[-1, 17], 1, Concat, [1]]
+  - [-1, 3, RepC3, [256]] # 24, F4
+
+  - [-1, 1, Conv, [256, 3, 2]] # 25
+  - [[-1, 12], 1, Concat, [1]]
+  - [-1, 3, RepC3, [256]] # 27, F5
+
+  # P2 branch (new)
+  - [21, 1, Conv, [128, 1, 1]] # 28, lateral of X3
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [1, 1, Conv, [128, 1, 1, None, 1, 1, False]] # 30, projection of backbone stage 1
+  - [[-2, -1], 1, Concat, [1]]
+  - [-1, 3, RepC3, [128]] # 32, X2
+
+  - [[32, 21, 24, 27], 1, RTDETRDecoder, [nc]] # 33, RTDETRDecoder(P2, P3, P4, P5)
