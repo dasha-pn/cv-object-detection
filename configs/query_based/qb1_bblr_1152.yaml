@@ -1,0 +1,9 @@
+# Learning rates of the RT-DETR paper: AdamW lr 1e-4, weight decay 1e-4, backbone lr 0.1x.
+name: qb1_bblr_1152
+family: query_based
+arch: rtdetr
+model: rtdetr-l.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 1152
+backbone_lr_scale: 0.1
+train: {epochs: 30, batch: 2, workers: 4, optimizer: AdamW, lr0: 0.0001, weight_decay: 0.0001}

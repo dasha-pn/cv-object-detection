@@ -1,0 +1,10 @@
+# RT-DETR-l with Ultralytics defaults: AdamW chosen automatically, lr 8.3e-4 for all parameters,
+# 300 queries. Same data, resolution, epochs and seed as the anchor-free runs.
+# Batch 2 fits 8 GB at 1152 px (batch 4 needs about 9 GB); gradients are accumulated to 64.
+name: qb0_rtdetr_l_1152
+family: query_based
+arch: rtdetr
+model: rtdetr-l.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 1152
+train: {epochs: 30, batch: 2, workers: 4}

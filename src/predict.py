@@ -5,7 +5,7 @@ import json
 import cv2
 import numpy as np
 
-from .common import WORK_DIR, find_data_root
+from .common import N_FOLDS, WORK_DIR, find_data_root
 from .evaluate import coco_evaluate
 
 # Evaluation sets: name -> (source split, COCO ground truth built by prepare_data.py)
@@ -14,13 +14,17 @@ EVAL_SETS = {
     "val": ("val", WORK_DIR / "eval" / "val.json"),
 }
 
+# Holdouts of the other folds, used only by the cross-validation runs
+FOLD_SETS = {f"fold{k}": ("train", WORK_DIR / "eval" / f"fold{k}_holdout.json") for k in range(N_FOLDS)}
+ALL_SETS = {**FOLD_SETS, **EVAL_SETS}
+
 # Low threshold and many boxes per image, as needed for a full precision-recall curve
 PREDICT_ARGS = {"conf": 0.001, "iou": 0.7, "max_det": 500, "quantize": 16, "verbose": False}
 WARMUP_IMAGES = 10
 
 
 def eval_images(eval_set):
-    split, gt_path = EVAL_SETS[eval_set]
+    split, gt_path = ALL_SETS[eval_set]
     gt = json.loads(gt_path.read_text())
     root = find_data_root() / split
     return [(img["id"], root / img["file_name"]) for img in gt["images"]]
@@ -73,7 +77,7 @@ def evaluate_model(model, imgsz, eval_sets=("fold0", "val"), save_dir=None, **ov
     report = {}
     for eval_set in eval_sets:
         detections, ms_per_image = predict_set(model, eval_set, imgsz, **overrides)
-        metrics = coco_evaluate(EVAL_SETS[eval_set][1], detections)
+        metrics = coco_evaluate(ALL_SETS[eval_set][1], detections)
         metrics["ms_per_image"] = ms_per_image
         metrics["fps"] = 1000.0 / ms_per_image
         report[eval_set] = metrics

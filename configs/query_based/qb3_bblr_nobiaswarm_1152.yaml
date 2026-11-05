@@ -1,0 +1,11 @@
+# qb1 repeated without the bias warm-up. With an explicitly chosen optimizer Ultralytics keeps
+# warmup_bias_lr=0.1, so in qb1 and qb2 the biases started at lr 0.1 (1000x lr0) and the
+# pretrained weights were damaged in the first epochs; optimizer=auto (qb0) sets it to 0.
+name: qb3_bblr_nobiaswarm_1152
+family: query_based
+arch: rtdetr
+model: rtdetr-l.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 1152
+backbone_lr_scale: 0.1
+train: {epochs: 30, batch: 2, workers: 4, optimizer: AdamW, lr0: 0.0001, weight_decay: 0.0001, warmup_bias_lr: 0.0}

@@ -1,0 +1,10 @@
+# qb0 with 500 decoder queries instead of 300; everything else, including the automatic
+# optimizer settings, as in qb0. Replaces the qb2 comparison, which was run with the qb1 warm-up.
+name: qb4_q500_default_1152
+family: query_based
+arch: rtdetr
+model: configs/models/rtdetr-l-q500.yaml
+weights: rtdetr-l.pt
+data: data/yolo/fold0_s10/data.yaml
+imgsz: 1152
+train: {epochs: 30, batch: 2, workers: 4}
