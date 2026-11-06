@@ -5,6 +5,7 @@ Examples:
     python scripts/train.py configs/anchor_free/af0_baseline_640.yaml --eval-only
     python scripts/train.py configs/anchor_free/af2_p2_1152.yaml --resume
     python scripts/train.py configs/query_based/qb3_bblr_nobiaswarm_1152.yaml --fold 1
+    python scripts/train.py configs/anchor_free/af1_imgsz1152.yaml --fold 1 --batch 4
 """
 
 import argparse
@@ -29,10 +30,18 @@ def main():
                         help="continue an interrupted run from its last.pt")
     parser.add_argument("--fold", type=int, default=0,
                         help="held-out fold for cross-validation (needs prepare_data.py --fold)")
+    parser.add_argument("--batch", type=int,
+                        help="replace the batch size of the config when a run does not fit in GPU memory")
+    parser.add_argument("--workers", type=int,
+                        help="replace the data loader workers of the config; each one costs about 1.6 GB of RAM")
     args = parser.parse_args()
 
     for config_path in args.config:
         cfg = fold_config(load_config(config_path), args.fold)
+        if args.batch:
+            cfg["train"]["batch"] = args.batch
+        if args.workers is not None:
+            cfg["train"]["workers"] = args.workers
         out_dir = run_dir(cfg)
         print(f"\n=== {cfg['name']} ===")
 
