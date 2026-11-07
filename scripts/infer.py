@@ -36,8 +36,10 @@ CV_INFERENCE_DIR = RUNS_DIR / "inference_cv"
 def strategy_name(cfg, args, imgsz):
     merge = f"_{args.merge}" if args.strategy not in ("plain", "nms") else ""
     grid = f"_grid{args.grid}" if args.strategy.startswith("tiles") and args.grid != 2 else ""
-    min_width = f"_minw{args.tile_min_width}" if args.strategy.startswith("tiles") and args.tile_min_width else ""
-    return f"{cfg['name']}_{args.strategy}{merge}{grid}{min_width}_{imgsz}"
+    tiled = args.strategy.startswith("tiles")
+    min_width = f"_minw{args.tile_min_width}" if tiled and args.tile_min_width else ""
+    max_width = f"_maxw{args.tile_max_width}" if tiled and args.tile_max_width else ""
+    return f"{cfg['name']}_{args.strategy}{merge}{grid}{min_width}{max_width}_{imgsz}"
 
 
 def load_detections(name, image_set):
@@ -53,6 +55,8 @@ def main():
     parser.add_argument("--grid", type=int, default=2, help="tiles per side for the tile strategies")
     parser.add_argument("--tile-min-width", type=int, default=0,
                         help="frames narrower than this get the plain pass in the tile strategies")
+    parser.add_argument("--tile-max-width", type=int, default=0,
+                        help="frames at least this wide get the plain pass in the tile strategies")
     parser.add_argument("--imgsz", type=int, help="inference size, defaults to the training size")
     parser.add_argument("--ensemble", nargs="+", help="names of saved results to fuse with WBF")
     parser.add_argument("--weights", nargs="+", type=float, help="ensemble weight of every source")
@@ -75,7 +79,7 @@ def main():
         model_cls = RTDETR if cfg.get("arch", "yolo") == "rtdetr" else YOLO
         model = model_cls(str(checkpoint(cfg)))
         predict = strategy(args.strategy, imgsz, merge=args.merge, grid=args.grid,
-                           min_tile_width=args.tile_min_width)
+                           min_tile_width=args.tile_min_width, max_tile_width=args.tile_max_width)
 
     image_sets = {} if args.test_only else {set_name: eval_images(set_name) for set_name in set_names}
     if args.test or args.test_only:
@@ -85,7 +89,7 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
     report = {"sources": args.ensemble, "weights": args.weights} if args.ensemble else {
         "config": args.config, "strategy": args.strategy, "merge": args.merge, "grid": args.grid,
-        "tile_min_width": args.tile_min_width, "imgsz": imgsz}
+        "tile_min_width": args.tile_min_width, "tile_max_width": args.tile_max_width, "imgsz": imgsz}
 
     for image_set, images in image_sets.items():
         if model is None:

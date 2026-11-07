@@ -55,6 +55,8 @@ def main():
     parser.add_argument("--imgsz", type=int, help="inference size, defaults to the training size")
     parser.add_argument("--tile-min-width", type=int, default=0,
                         help="frames narrower than this get the plain pass in the tile strategies")
+    parser.add_argument("--tile-max-width", type=int, default=0,
+                        help="frames at least this wide get the plain pass in the tile strategies")
     parser.add_argument("--test", action="store_true", help="rescore the test frames and write a submission")
     parser.add_argument("--radius", type=int, default=2, help="test: frames on each side")
     parser.add_argument("--iou", type=float, default=0.5, help="test: IoU to match boxes of two frames")
@@ -68,13 +70,15 @@ def main():
     cfg = fold_config(load_config(args.config), args.fold)
     imgsz = args.imgsz or cfg["imgsz"]
     min_width = f"_minw{args.tile_min_width}" if args.tile_min_width else ""
-    name = f"{cfg['name']}_{args.strategy}{min_width}_{imgsz}"
+    max_width = f"_maxw{args.tile_max_width}" if args.tile_max_width else ""
+    name = f"{cfg['name']}_{args.strategy}{min_width}{max_width}_{imgsz}"
     out_dir = (TEMPORAL_DIR if args.fold == 0 else CV_TEMPORAL_DIR) / name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     model_cls = RTDETR if cfg.get("arch", "yolo") == "rtdetr" else YOLO
     model = model_cls(str(checkpoint(cfg)))
-    predict = strategy(args.strategy, imgsz, min_tile_width=args.tile_min_width)
+    predict = strategy(args.strategy, imgsz, min_tile_width=args.tile_min_width,
+                       max_tile_width=args.tile_max_width)
 
     # Grid of settings on the evaluation sets; radius 0 is the model without rescoring
     report = []

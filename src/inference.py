@@ -137,7 +137,7 @@ def weighted_boxes_fusion(parts, weights=None, iou_thr=0.55):
 
 # ---------------------------------------------------------------- strategies
 
-def strategy(name, imgsz, merge="nms", grid=2, overlap=0.2, min_tile_width=0):
+def strategy(name, imgsz, merge="nms", grid=2, overlap=0.2, min_tile_width=0, max_tile_width=0):
     """Return predict(model, image) -> prediction for one of the inference strategies.
 
     plain   one pass on the full frame
@@ -146,15 +146,17 @@ def strategy(name, imgsz, merge="nms", grid=2, overlap=0.2, min_tile_width=0):
     tiles   full frame + grid x grid zoomed tiles
     tiles_flip  full frame + mirrored frame + grid x grid zoomed tiles
 
-    Frames narrower than min_tile_width get the plain pass in the tile strategies: tiles help by
-    recovering pixels the full-frame pass loses to downscaling, and a small frame loses none.
+    In the tile strategies a frame narrower than min_tile_width, or at least max_tile_width wide,
+    gets the plain pass; 0 means no limit.
     """
     def merge_parts(parts):
         return weighted_boxes_fusion(parts) if merge == "wbf" else nms_merge(parts)
 
     def predict(model, image):
         full = predict_pass(model, image, imgsz)
-        if name == "plain" or (name.startswith("tiles") and image.shape[1] < min_tile_width):
+        width = image.shape[1]
+        skip_tiles = width < min_tile_width or (max_tile_width and width >= max_tile_width)
+        if name == "plain" or (name.startswith("tiles") and skip_tiles):
             return top_k(full)
         if name == "nms":
             return nms_merge([full], iou_thr=0.7)
