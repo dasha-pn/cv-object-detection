@@ -1,0 +1,11 @@
+# Final fit of qb5 (D-FINE-L) on every 5th frame of all train and val clips. The evaluation clips
+# are part of the training data, so the run is not scored.
+name: f3_dfine_l_full
+family: pipeline
+arch: dfine
+model: ustc-community/dfine-large-obj2coco-e25
+data: data/yolo/full_s5/data.yaml
+imgsz: 1152
+checkpoint: last
+evaluate: false
+train: {epochs: 6, batch: 2, accumulate: 4, lr: 0.0001, backbone_lr_scale: 0.1, weight_decay: 0.000125, warmup_steps: 200, workers: 1}

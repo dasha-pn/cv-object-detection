@@ -4,7 +4,7 @@ An experiment config (configs/<family>/<name>.yaml) looks like:
 
     name: af1_imgsz1152
     family: anchor_free
-    arch: yolo                  # yolo or rtdetr
+    arch: yolo                  # yolo, rtdetr or dfine (see src/dfine.py)
     model: yolo11s.pt           # .pt checkpoint or model .yaml
     weights: yolo11s.pt         # optional, pretrained weights loaded into a .yaml model
     data: data/yolo/fold0_s10/data.yaml
@@ -30,6 +30,7 @@ from ultralytics.utils.loss import BboxLoss, v8DetectionLoss
 from ultralytics.utils.torch_utils import intersect_dicts, unwrap_model
 
 from .common import REPO_ROOT, RUNS_DIR, SEED
+from .dfine import DFineDetector, train_dfine
 
 
 # ---------------------------------------------------------------- NWD box loss
@@ -260,7 +261,18 @@ def checkpoint(cfg):
     return run_dir(cfg) / "weights" / f"{cfg.get('checkpoint', 'best')}.pt"
 
 
+def load_detector(cfg):
+    """Trained model of a run, every architecture has the predict() call of Ultralytics."""
+    arch = cfg.get("arch", "yolo")
+    if arch == "dfine":
+        return DFineDetector(cfg["model"], checkpoint(cfg), **cfg.get("model_config", {}))
+    return (RTDETR if arch == "rtdetr" else YOLO)(str(checkpoint(cfg)))
+
+
 def train_experiment(cfg, resume=False):
+    if cfg.get("arch") == "dfine":
+        return train_dfine(cfg)
+
     out_dir = run_dir(cfg)
     if resume:
         # Continue an interrupted run; Ultralytics keeps the saved settings except batch and workers
