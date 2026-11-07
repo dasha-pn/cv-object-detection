@@ -14,11 +14,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ultralytics import RTDETR, YOLO  # noqa: E402
-
 from src.evaluate import format_metrics  # noqa: E402
 from src.predict import evaluate_model  # noqa: E402
-from src.train_tools import checkpoint, eval_sets, fold_config, load_config, run_dir, train_experiment  # noqa: E402
+from src.train_tools import eval_sets, fold_config, load_config, load_detector, run_dir, train_experiment  # noqa: E402
 
 
 def main():
@@ -52,8 +50,7 @@ def main():
         if not cfg.get("evaluate", True):
             continue
 
-        model_cls = RTDETR if cfg.get("arch", "yolo") == "rtdetr" else YOLO
-        model = model_cls(str(checkpoint(cfg)))
+        model = load_detector(cfg)
         report = evaluate_model(model, cfg["imgsz"], eval_sets=eval_sets(cfg), save_dir=out_dir)
 
         for eval_set, metrics in report.items():

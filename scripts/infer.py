@@ -20,14 +20,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ultralytics import RTDETR, YOLO  # noqa: E402
-
 from src.common import REPO_ROOT, RUNS_DIR  # noqa: E402
 from src.evaluate import coco_evaluate, format_metrics  # noqa: E402
 from src.inference import ensemble, run_strategy, strategy  # noqa: E402
 from src.predict import ALL_SETS, EVAL_SETS, eval_images  # noqa: E402
 from src.submission import test_images, write_submission  # noqa: E402
-from src.train_tools import checkpoint, eval_sets, fold_config, load_config  # noqa: E402
+from src.train_tools import eval_sets, fold_config, load_config, load_detector  # noqa: E402
 
 INFERENCE_DIR = RUNS_DIR / "inference"
 CV_INFERENCE_DIR = RUNS_DIR / "inference_cv"
@@ -76,8 +74,7 @@ def main():
         set_names = eval_sets(cfg)
         imgsz = args.imgsz or cfg["imgsz"]
         name = args.name or strategy_name(cfg, args, imgsz)
-        model_cls = RTDETR if cfg.get("arch", "yolo") == "rtdetr" else YOLO
-        model = model_cls(str(checkpoint(cfg)))
+        model = load_detector(cfg)
         predict = strategy(args.strategy, imgsz, merge=args.merge, grid=args.grid,
                            min_tile_width=args.tile_min_width, max_tile_width=args.tile_max_width)
 

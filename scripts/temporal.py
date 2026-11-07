@@ -18,15 +18,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ultralytics import RTDETR, YOLO  # noqa: E402
-
 from src.common import REPO_ROOT, RUNS_DIR  # noqa: E402
 from src.evaluate import coco_evaluate, format_metrics  # noqa: E402
 from src.inference import from_coco, run_strategy, strategy, to_coco  # noqa: E402
 from src.predict import ALL_SETS  # noqa: E402
 from src.submission import write_submission  # noqa: E402
 from src.temporal import frames_table, neighbours, rescore  # noqa: E402
-from src.train_tools import checkpoint, eval_sets, fold_config, load_config  # noqa: E402
+from src.train_tools import eval_sets, fold_config, load_config, load_detector  # noqa: E402
 
 TEMPORAL_DIR = RUNS_DIR / "temporal"
 CV_TEMPORAL_DIR = RUNS_DIR / "temporal_cv"
@@ -75,8 +73,7 @@ def main():
     out_dir = (TEMPORAL_DIR if args.fold == 0 else CV_TEMPORAL_DIR) / name
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    model_cls = RTDETR if cfg.get("arch", "yolo") == "rtdetr" else YOLO
-    model = model_cls(str(checkpoint(cfg)))
+    model = load_detector(cfg)
     predict = strategy(args.strategy, imgsz, min_tile_width=args.tile_min_width,
                        max_tile_width=args.tile_max_width)
 
