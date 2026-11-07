@@ -1,0 +1,10 @@
+# qb5 with the larger D-FINE-X. It does not fit in 8 GB safely at batch 2, so batch 1 with twice the
+# accumulation keeps the same optimisation step and the two runs differ only in the model.
+name: qb6_dfine_x_1152
+family: query_based
+arch: dfine
+model: ustc-community/dfine-xlarge-obj2coco
+data: data/yolo/fold0_s5/data.yaml
+imgsz: 1152
+checkpoint: last
+train: {epochs: 6, batch: 1, accumulate: 8, lr: 0.0001, backbone_lr_scale: 0.1, weight_decay: 0.000125, warmup_steps: 200, workers: 1}
