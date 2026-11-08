@@ -22,18 +22,31 @@ Based on these findings, we explored anchor-based, anchor-free, and query-based 
 
 ## Method
 
-Inline math works with single dollars: $f(x) = \sigma(Wx + b)$. Display math uses double dollars:
+### Data Preparation
 
-$$
-\mathcal{L}(\theta) = -\frac{1}{N}\sum_{i=1}^{N} y_i \log \hat{y}_i
-$$
+We converted the original COCO annotations into YOLO format for training Ultralytics-based detectors, while preserving COCO annotations for evaluation.
 
-Code blocks are highlighted:
+We excluded ignored (`iscrowd`) regions from training targets and masked them with gray pixels, restoring annotated objects that overlapped these regions. This prevented the models from learning from ambiguous areas while preserving valid training examples.
 
-```python
-def accuracy(y_true, y_pred):
-    return (y_true == y_pred).mean()
-```
+Since consecutive video frames are highly correlated, we experimented with temporal subsampling, selecting every 5th or 10th frame to reduce redundancy and computational cost.
+
+### Validation Strategy
+
+To avoid data leakage between correlated frames, we used **3-fold GroupKFold cross-validation**, grouping frames by their source video. All frames from the same video were assigned to the same fold.
+
+For efficient model development, we evaluated experiments on fixed subsets of held-out training videos, sampling every 10th frame. We also maintained a separate evaluation subset from the provided validation split, sampling every 5th frame.
+
+We used the same COCO-style evaluation procedure across architectures, reporting **mAP@[0.50:0.95]** as our primary metric, alongside AP50, AP75, and AP for small, medium, and large objects. We retained ignored regions during evaluation and allowed up to 500 detections per image, matching the competition evaluation settings.
+
+### Model Selection and Optimization
+
+We compared several detector families to investigate different approaches to localization and classification:
+
+- **Anchor-based:** Faster R-CNN and RetinaNet.
+- **Anchor-free:** YOLO-based detectors.
+- **Query-based:** RT-DETR and D-FINE.
+
+We organized experiments around input resolution, architectural modifications, optimization settings, and inference strategies. We used validation results to guide subsequent experiments and compared public leaderboard scores where available.
 
 ## Results
 
