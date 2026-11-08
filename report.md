@@ -50,7 +50,7 @@ We organized experiments around input resolution, architectural modifications, o
 
 ## Results
 
-### Baseline Models
+### Baseline models
 
 We first evaluated three detector families: two-stage anchor-based Faster R-CNN, one-stage anchor-based RetinaNet, and anchor-free YOLO11. We initialized the models with pretrained COCO weights and investigated how their architectures handled small objects and crowded scenes.
 
@@ -68,7 +68,7 @@ We first evaluated three detector families: two-stage anchor-based Faster R-CNN,
 
 These experiments showed that higher input resolution was particularly important for small-object detection, while architectural complexity alone did not guarantee better performance. We therefore continued with query-based detectors and more advanced inference strategies.
 
-### Query-Based and Architectural Experiments
+### Query-based and architectural experiments
 
 We next investigated RT-DETR-l, using a hybrid encoder and object queries with Hungarian matching. At 1152 px, the baseline RT-DETR (qb0) achieved 0.296 fold-0 AP and 0.253 official validation AP, outperforming YOLO11s (af1) by approximately +0.054 ± 0.006 paired per-clip AP across 26 clips. RT-DETR improved recall from 62% to 77%, although inference was approximately twice as slow.
 
@@ -86,6 +86,32 @@ We also implemented a custom RT-DETR architecture with an additional stride-4 P2
 
 These experiments demonstrated that optimization stability and effective use of pretrained features mattered more than simply increasing architectural complexity. We retained the standard RT-DETR architecture for subsequent pipeline experiments.
 
+### Inference and ensemble experiments
+
+We investigated inference strategies to improve small-object detection without retraining. Increasing inference resolution to 1344–1536 px provided approximately +0.008–0.010 AP, while combining full-frame inference with 2×2 tiling and class-wise NMS achieved a larger **+0.021 ± 0.003 paired per-clip AP**, improving all 26 evaluated clips. However, tiling increased inference time approximately 4.5-fold.
+
+We also introduced temporal rescoring, using detections from neighboring frames to adjust confidence scores. Our best configuration used smooth rescoring, radius=2, and IoU=0.3, improving RT-DETR with tiling by **+0.006 ± 0.002 paired AP** on 23/26 clips. The mean rescoring strategy was less effective.
+
+We tested Weighted Boxes Fusion (WBF) to combine predictions. Initially, RT-DETR + YOLO11 fusion provided no meaningful improvement (approximately 0.000 ± 0.003 paired AP). We subsequently explored larger RT-DETR ensembles and D-FINE models.
+
+| Submission | Public LB |
+|---|---:|
+| RT-DETR full-frame | 0.27921 |
+| RT-DETR + temporal | 0.28119 |
+| RT-DETR + selective tiling + temporal | 0.28935 |
+| D-FINE-X single model | 0.31507 |
+| D-FINE-L single model | 0.33169 |
+| 13 RT-DETR models + WBF + temporal | 0.35596 |
+| 14-model ensemble (+ D-FINE-L) | 0.36281 |
+| 18-model ensemble (+ D-FINE-X/L) | 0.36229 |
+| 15-model ensemble (D-FINE-L + RT-DETR) | **0.36620** |
+
+The 18-model ensemble did not outperform the smaller 14-model configuration, demonstrating that adding models does not necessarily improve fusion. Our strongest completed submission so far was the 15-model ensemble, combining two D-FINE-L checkpoints with 13 RT-DETR models, WBF, and temporal processing.
+
+These results suggest that combining complementary detectors and exploiting temporal consistency provided greater improvements than architectural modifications alone. We will update the final model selection after the remaining experiments finish.
+
 ## Conclusion
 
 > Summarize your findings here.
+
+Додати табличку із порівняннями модульок усіх
