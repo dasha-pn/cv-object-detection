@@ -1,0 +1,10 @@
+# qb6 with a stronger zoom: crops down to 35% of the frame side instead of 50%, so small objects
+# are seen larger more often in training. Only min_crop differs from qb6.
+name: qb7_dfine_x_crop035
+family: query_based
+arch: dfine
+model: ustc-community/dfine-xlarge-obj2coco
+data: data/yolo/fold0_s5/data.yaml
+imgsz: 1152
+checkpoint: last
+train: {epochs: 6, batch: 1, accumulate: 8, lr: 0.0001, backbone_lr_scale: 0.1, weight_decay: 0.000125, warmup_steps: 200, workers: 1, min_crop: 0.35}
