@@ -1,4 +1,4 @@
-﻿"""Train one experiment and score its checkpoint (best.pt unless the config says last) on the fixed evaluation sets.
+"""Train one experiment and score its checkpoint (best.pt unless the config says last) on the fixed evaluation sets.
 
 Examples:
     python scripts/train.py configs/anchor_free/af0_baseline_640.yaml

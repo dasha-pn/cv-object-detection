@@ -112,7 +112,6 @@ def weighted_boxes_fusion(parts, weights=None, iou_thr=0.55):
         fused = np.zeros((len(idx), 4))
         box_sum = np.zeros((len(idx), 4))
         score_sum = np.zeros(len(idx))
-        weight_sum = np.zeros(len(idx))
         count = np.zeros(len(idx))
         n = 0
         for i in idx:

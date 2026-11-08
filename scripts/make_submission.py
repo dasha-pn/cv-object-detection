@@ -11,12 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ultralytics import RTDETR, YOLO  # noqa: E402
-
 from src.common import REPO_ROOT  # noqa: E402
 from src.predict import predict_images  # noqa: E402
 from src.submission import test_images, write_submission  # noqa: E402
-from src.train_tools import load_config, run_dir  # noqa: E402
+from src.train_tools import load_config, load_detector  # noqa: E402
 
 SUBMISSIONS_DIR = REPO_ROOT / "submissions"
 
@@ -29,8 +27,7 @@ def main():
 
     cfg = load_config(args.config)
     imgsz = args.imgsz or cfg["imgsz"]
-    model_cls = RTDETR if cfg.get("arch", "yolo") == "rtdetr" else YOLO
-    model = model_cls(str(run_dir(cfg) / "weights" / "best.pt"))
+    model = load_detector(cfg)
 
     images = test_images()
     detections, ms_per_image = predict_images(model, images, imgsz)
