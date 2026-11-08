@@ -1,13 +1,24 @@
 ---
-title: Homework 1 -- Your Title Here
-author: John Doe
+title: Homework 2 -- Detect objects across videos
+authors: Daryna Shevchuk and Roman Prokhorov
 course: Artificial Intelligence · UCU
 date: 2026-10-12
 ---
 
 ## Introduction
 
-Write your report here using regular **Markdown**. This text is an example — replace it.
+In this homework, we focused on multi-class object detection in crowded video scenes, aiming to develop an accurate detection pipeline and systematically compare different architectures, preprocessing strategies, and training configurations.
+
+Our dataset contains **24,201 training frames from 56 videos** and **2,846 validation frames from 7 videos**, with eight target classes. After excluding ignored regions, we identified approximately 1.11 million training objects and 114 thousand validation objects.
+
+During exploratory data analysis, we identified several challenges:
+
+- **Small objects:** 24.91% of training bounding boxes have an area below 32² pixels, making detection sensitive to input resolution.
+- **Class imbalance:** Cars and people account for 75.44% of training annotations.
+- **Crowded scenes:** Some training frames contain up to 180 objects, increasing the difficulty of localization and duplicate suppression.
+- **Distribution differences:** We observed variations in class proportions and object sizes between training and validation sequences.
+
+Based on these findings, we explored anchor-based, anchor-free, and query-based detectors, along with higher input resolutions, architectural modifications, and alternative inference strategies.
 
 ## Method
 
