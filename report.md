@@ -68,6 +68,24 @@ We first evaluated three detector families: two-stage anchor-based Faster R-CNN,
 
 These experiments showed that higher input resolution was particularly important for small-object detection, while architectural complexity alone did not guarantee better performance. We therefore continued with query-based detectors and more advanced inference strategies.
 
+### Query-Based and Architectural Experiments
+
+We next investigated RT-DETR-l, using a hybrid encoder and object queries with Hungarian matching. At 1152 px, the baseline RT-DETR (qb0) achieved 0.296 fold-0 AP and 0.253 official validation AP, outperforming YOLO11s (af1) by approximately +0.054 ± 0.006 paired per-clip AP across 26 clips. RT-DETR improved recall from 62% to 77%, although inference was approximately twice as slow.
+
+We then experimented with learning rates, warm-up, and query counts. Two initial configurations (qb1/qb2) performed poorly because an incorrect bias warm-up learning rate destabilized optimization. After correcting this issue and reducing backbone learning rate, qb3 achieved our strongest RT-DETR validation result of **0.262 AP**, compared with 0.253 for qb0. Increasing the number of queries from 300 to 500 (qb4) did not provide a consistent improvement (+0.003 ± 0.006 paired AP).
+
+| RT-DETR configuration | Fold-0 AP | Official Val AP |
+|---|---:|---:|
+| qb0 — baseline | 0.296 | 0.253 |
+| qb1 — incorrect warm-up | 0.175 | 0.152 |
+| qb2 — incorrect warm-up | 0.211 | 0.170 |
+| qb3 — corrected optimization | 0.299 | **0.262** |
+| qb4 — 500 queries | **0.304** | 0.237 |
+
+We also implemented a custom RT-DETR architecture with an additional stride-4 P2 feature level and four-scale decoder input. Despite its potential benefits for small objects, neither initialization strategy (c1/c2) produced a reliable overall AP improvement. Similarly, YOLO's P2 modification reduced paired AP by approximately 0.016.
+
+These experiments demonstrated that optimization stability and effective use of pretrained features mattered more than simply increasing architectural complexity. We retained the standard RT-DETR architecture for subsequent pipeline experiments.
+
 ## Conclusion
 
 > Summarize your findings here.
