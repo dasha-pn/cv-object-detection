@@ -110,6 +110,38 @@ The 18-model ensemble did not outperform the smaller 14-model configuration, dem
 
 These results suggest that combining complementary detectors and exploiting temporal consistency provided greater improvements than architectural modifications alone. We will update the final model selection after the remaining experiments finish.
 
+## Final model and reproducibility
+
+### Final model
+
+Our strongest completed submission currently achieves **0.36620 Public LB**, using Weighted Boxes Fusion of 15 models: two D-FINE-L checkpoints and 13 RT-DETR checkpoints, followed by temporal rescoring.
+
+We are still evaluating our final training run. We will update this section with **[FINAL_MODEL]**, **[FINAL_CONFIGURATION]**, **[FINAL_VALIDATION_SCORE]**, and **[FINAL_PUBLIC_LB_SCORE]** once training and evaluation are complete.
+
+### Reproducibility
+
+We implemented our experiments using PyTorch, TorchVision, Ultralytics, and COCO-style evaluation. The repository contains model configurations, data preparation scripts, training code, inference utilities, and experiment notebooks.
+
+To reproduce our RT-DETR training pipeline, we install the dependencies and prepare the video-based dataset:
+
+```bash
+pip install -r requirements.txt
+python scripts/prepare_data.py --train-step 5 --full
+python scripts/train.py configs/pipeline/f1_rtdetr_full_s5.yaml
+```
+
+This configuration trains COCO-pretrained RT-DETR-l at 1152 px, using AdamW, learning rate 1e-4, backbone learning-rate scaling of 0.1, batch size 2, and nine epochs. We use every fifth frame from the combined training and validation clips.
+
+For single-model inference with temporal rescoring, we run:
+
+```bash
+python scripts/temporal.py configs/pipeline/f1_rtdetr_full_s5.yaml --strategy tiles --tile-max-width 1600 --test-only --radius 2 --iou 0.3 --mode smooth
+```
+
+Our ensemble implementation is available in `scripts/ensemble.py`, which combines cached predictions using WBF and optionally applies temporal rescoring. Reproducing the full ensemble additionally requires the individual trained checkpoints and their saved predictions.
+
+We will document the final training and inference commands as **[FINAL_TRAINING_COMMAND]** and **[FINAL_INFERENCE_COMMAND]** after selecting the final configuration.
+
 ## Conclusion
 
 > Summarize your findings here.
