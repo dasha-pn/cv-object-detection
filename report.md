@@ -2,7 +2,7 @@
 title: Homework 2 -- Detect objects across videos
 authors: Daryna Shevchuk and Roman Prokhorov
 course: Artificial Intelligence · UCU
-date: 2026-10-12
+date: 2026-11-09
 ---
 
 ## Introduction
